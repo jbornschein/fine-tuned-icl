@@ -1,0 +1,42 @@
+[project]
+name = "qwen-finetune"
+version = "0.1.0"
+description = "Finetune LLMs with Hugging Face Transformers"
+requires-python = ">=3.13"
+dependencies = [
+    "datasets>=3.0.0",
+    "ipython>=9.4.0",
+    "numpy>=2.3.1",
+    "simple-parsing>=0.1.7",
+    "torch==2.7.1",
+    # "torchvision>=0.20.0",
+    "rocm[devel,libraries]",
+    "tqdm>=4.67.1",
+    "wandb>=0.18.0",
+    "transformers>=4.45.0",
+    "ipykernel>=7.0.1",
+    "ipdb>=0.13.13",
+]
+
+[tool.uv]
+required-environments = [
+  "sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
+
+
+[tool.uv.sources]
+torch = { index = "therock" }
+rocm = { index = "therock" } 
+
+[[tool.uv.index]]
+name = "therock"
+url = "https://rocm.nightlies.amd.com/v2/gfx1151/" 
+
+
+# dependencies = [
+#     # "torch>=2.0.0",
+#     # "transformers>=4.40.0",
+#     # "datasets>=2.14.0",
+#     # "accelerate>=0.25.0",
+#     # "trl>=0.8.0",
+# ]
