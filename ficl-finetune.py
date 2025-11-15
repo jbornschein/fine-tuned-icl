@@ -1,6 +1,6 @@
 """Fine-Tuned In-Context Learning (FICL)."""
 
-from dataclasses import dataclass
+import dataclasses
 
 import numpy as np
 import torch
@@ -13,7 +13,7 @@ from data import format_prompt, load_bbh
 from eval import eval_example
 
 
-@dataclass
+@dataclasses.dataclass
 class Config:
     """Configuration for the Qwen model and training."""
 
@@ -34,9 +34,14 @@ if __name__ == "__main__":
     parser.add_arguments(Config, dest="config")
     args = parser.parse_args()
 
-    config = args.config
+    wandb.init(project="ficl", config=args.config)
 
-    wandb.init(project="ficl", config=config)
+    # Use wandb.config (has sweep values if in sweep, CLI values otherwise)
+    config_dict = {
+        field.name: getattr(wandb.config, field.name, getattr(args.config, field.name))
+        for field in dataclasses.fields(Config)
+    }
+    config = Config(**config_dict)
 
     rng = np.random.default_rng(config.random_seed)
 
@@ -123,4 +128,4 @@ if __name__ == "__main__":
         model.eval()
 
         # Update progress bar with statistics
-        pbar.set_postfix({"acc": f"{avg_accuracy:.2%}"})
+        pbar.set_postfix({"# correct": cum_correct, "avg-acc": f"{avg_accuracy:.2}"})
