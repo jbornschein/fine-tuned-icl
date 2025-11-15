@@ -34,7 +34,7 @@ class Config:
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description="Finetune Qwen model")
+    parser = ArgumentParser(description="Fine-tuned ICL")
     parser.add_arguments(Config, dest="config")
     parser.add_argument(
         "-v",
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     # Configure structlog with stdlib logging based on verbosity
     log_level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(level=log_level)
-    structlog.configure(wrapper_class=structlog.stdlib.BoundLogger)
+    structlog.configure(wrapper_class=structlog.make_filtering_bound_logger(log_level))
 
     wandb.init(project="ficl", config=args.config)
 
@@ -146,3 +146,5 @@ if __name__ == "__main__":
 
         # Update progress bar with statistics
         pbar.set_postfix({"# correct": cum_correct, "avg-acc": f"{avg_accuracy:.2}"})
+
+    logger.info("Training complete", accuracy=avg_accuracy)
