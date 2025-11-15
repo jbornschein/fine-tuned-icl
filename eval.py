@@ -4,6 +4,7 @@ import dataclasses
 
 import pandas as pd
 import torch
+from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from data import format_prompt, match_completion
@@ -93,6 +94,8 @@ def eval_dataframe(
             test_input=test_example["input"],
             test_target=test_example["target"],
         )
-        for _, test_example in test_examples.iterrows()
+        for _, test_example in tqdm(
+            test_examples.iterrows(), total=len(test_examples), desc="Evaluating"
+        )
     ]
     return pd.DataFrame([dataclasses.asdict(result) for result in results])
