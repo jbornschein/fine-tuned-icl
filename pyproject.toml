@@ -17,6 +17,10 @@ dependencies = [
     "ipykernel>=7.0.1",
     "ipdb>=0.13.13",
     "pandas>=2.3.3",
+]
+
+[project.optional-dependencies]
+dev = [
     "ruff>=0.14.5",
 ]
 
@@ -28,12 +32,15 @@ required-environments = [
 
 [tool.uv.sources]
 torch = { index = "therock" }
-rocm = { index = "therock" } 
+rocm = { index = "therock" }
 
 [[tool.uv.index]]
 name = "therock"
-url = "https://rocm.nightlies.amd.com/v2/gfx1151/" 
+url = "https://rocm.nightlies.amd.com/v2/gfx1151/"
 
+[tool.ruff]
+target-version = "py313"
+exclude = ["wandb"]
 
 # dependencies = [
 #     # "torch>=2.0.0",
