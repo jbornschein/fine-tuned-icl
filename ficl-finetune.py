@@ -1,8 +1,10 @@
 """Fine-Tuned In-Context Learning (FICL)."""
 
 import dataclasses
+import logging
 
 import numpy as np
+import structlog
 import torch
 from simple_parsing import ArgumentParser
 from tqdm import tqdm
@@ -11,6 +13,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import wandb
 from data import format_prompt, load_bbh
 from eval import eval_example
+
+logger = structlog.get_logger()
 
 
 @dataclasses.dataclass
@@ -32,7 +36,18 @@ class Config:
 if __name__ == "__main__":
     parser = ArgumentParser(description="Finetune Qwen model")
     parser.add_arguments(Config, dest="config")
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Enable DEBUG logging (default: INFO)",
+    )
     args = parser.parse_args()
+
+    # Configure structlog with stdlib logging based on verbosity
+    log_level = logging.DEBUG if args.verbose else logging.INFO
+    logging.basicConfig(level=log_level)
+    structlog.configure(wrapper_class=structlog.stdlib.BoundLogger)
 
     wandb.init(project="ficl", config=args.config)
 
@@ -42,6 +57,8 @@ if __name__ == "__main__":
         for field in dataclasses.fields(Config)
     }
     config = Config(**config_dict)
+
+    logger.info("Starting FICL training", config=config)
 
     rng = np.random.default_rng(config.random_seed)
 

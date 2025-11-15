@@ -3,11 +3,14 @@
 import dataclasses
 
 import pandas as pd
+import structlog
 import torch
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from data import format_prompt, match_completion
+
+logger = structlog.get_logger()
 
 
 @dataclasses.dataclass
@@ -60,10 +63,13 @@ def eval_example(
     ).strip()
 
     correct = match_completion(completion, test_target)
-    if correct:
-        print(f"CORRECT:   pred={completion}  vs.  true={test_target}")
-    else:
-        print(f"INCORRECT: pred={completion}  vs.  true={test_target}")
+
+    logger.debug(
+        f"Example {'correct' if correct else 'incorrect'}",
+        prediction=completion,
+        target=test_target,
+        correct=correct,
+    )
 
     return EvalResult(
         input=test_input,
@@ -83,6 +89,14 @@ def eval_dataframe(
     max_new_tokens: int = 512,
     temperature: float = 0.2,
 ) -> pd.DataFrame:
+    logger.info(
+        "Starting evaluation",
+        num_examples=len(test_examples),
+        num_context_examples=len(context),
+        max_new_tokens=max_new_tokens,
+        temperature=temperature,
+    )
+
     results = [
         eval_example(
             instruction=instruction,
@@ -98,4 +112,15 @@ def eval_dataframe(
             test_examples.iterrows(), total=len(test_examples), desc="Evaluating"
         )
     ]
-    return pd.DataFrame([dataclasses.asdict(result) for result in results])
+
+    df_results = pd.DataFrame([dataclasses.asdict(result) for result in results])
+    accuracy = df_results["correct"].mean()
+
+    logger.info(
+        "Evaluation complete",
+        accuracy=accuracy,
+        num_correct=int(df_results["correct"].sum()),
+        num_total=len(df_results),
+    )
+
+    return df_results
