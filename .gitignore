@@ -1,0 +1,6 @@
+__pycache__/
+.git
+wandb
+output/*
+.venv/
+.DS_Store
