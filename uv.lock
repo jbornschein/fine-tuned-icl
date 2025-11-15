@@ -1342,12 +1342,16 @@ dependencies = [
     { name = "pandas" },
     { name = "peft" },
     { name = "rocm", extra = ["devel", "libraries"] },
-    { name = "ruff" },
     { name = "simple-parsing" },
     { name = "torch" },
     { name = "tqdm" },
     { name = "transformers" },
     { name = "wandb" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "ruff" },
 ]
 
 [package.metadata]
@@ -1360,13 +1364,14 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "peft", specifier = ">=0.10.0" },
     { name = "rocm", extras = ["devel", "libraries"], index = "https://rocm.nightlies.amd.com/v2/gfx1151/" },
-    { name = "ruff", specifier = ">=0.14.5" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.14.5" },
     { name = "simple-parsing", specifier = ">=0.1.7" },
     { name = "torch", specifier = "==2.7.1", index = "https://rocm.nightlies.amd.com/v2/gfx1151/" },
     { name = "tqdm", specifier = ">=4.67.1" },
     { name = "transformers", specifier = ">=4.45.0" },
     { name = "wandb", specifier = ">=0.18.0" },
 ]
+provides-extras = ["dev"]
 
 [[package]]
 name = "regex"
