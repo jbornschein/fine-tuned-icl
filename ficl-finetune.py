@@ -2,12 +2,14 @@
 
 from dataclasses import dataclass
 
+import numpy as np
 import torch
 from simple_parsing import ArgumentParser
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 import wandb
-from data import format_prompt, load_bbh
+from data import load_bbh
+from eval import eval_example
 
 
 @dataclass
@@ -16,11 +18,14 @@ class Config:
 
     model_name: str = "Qwen/Qwen3-1.7B"
     dataset: str = "geometric_shapes"
+    instruction: str = ""
+    random_seed: int = 42
     num_train_examples: int | None = None
     num_test_examples: int = 100
     num_context: int = 3
     num_epochs: int = 1
     learning_rate: float = 1e-5
+    max_sample_tokens: int = 8
 
 
 if __name__ == "__main__":
@@ -31,6 +36,8 @@ if __name__ == "__main__":
     config = args.config
 
     wandb.init(project="ficl", config=config)
+
+    rng = np.random.default_rng(config.random_seed)
 
     # Load model and tokenizer
     tokenizer = AutoTokenizer.from_pretrained(config.model_name)
@@ -48,10 +55,20 @@ if __name__ == "__main__":
         input = example.input
         target = example.target
 
-        m
+        #
+        num_context = min(pos, config.num_context)
 
-        prompt = format_prompt(
-            instruction="", context=train_df[:pos], input=input, target=target
+        # Evaluate model against new datapoint
+        context = train_df[:pos].sample(n=num_context, random_state=rng)
+
+        result = eval_example(
+            instruction=config.instruction,
+            context=context,
+            test_input=input,
+            test_target=target,
+            model=model,
+            tokenizer=tokenizer,
+            max_new_tokens=config.max_sample_tokens,
         )
 
     # Actual training loop

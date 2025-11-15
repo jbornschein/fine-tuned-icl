@@ -1,5 +1,7 @@
 """Data related utilities, including prompt formatting and completion matching."""
 
+import re
+
 import pandas as pd
 from datasets import load_dataset
 
