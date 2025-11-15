@@ -1,14 +1,11 @@
-"""
-Finetune Qwen LLM with Hugging Face Transformers using full fine-tuning.
-
-This script demonstrates how to finetune Qwen models using full fine-tuning
-(all parameters are trained).
+"""Finetune Qwen LLM with Hugging Face Transformers using full fine-tuning.
 """
 
 from dataclasses import dataclass
 from simple_parsing import ArgumentParser
 
 
+import wandb
 import torch
 from datasets import load_dataset
 from transformers import (
@@ -23,12 +20,12 @@ from transformers import (
 @dataclass
 class Config:
     """Configuration for the Qwen model and training."""
-    model_name: str = "Qwen/Qwen3-1.7B"
+    model_name: str = "Qwen/Qwen3-1.7B"    
     # model_name: str = "Qwen/Qwen2.5-0.5B-Instruct"  # Start with small model for testing
     output_dir: str = "./qwen-finetuned"
-    num_epochs: int = 3
-    batch_size: int = 4
-    learning_rate: float = 2e-4
+    num_epochs: int = 1
+    batch_size: int = 1
+    learning_rate: float = 1e-5
 
 
 def load_model_and_tokenizer(config: Config, device_map: str = "auto"):
@@ -57,11 +54,16 @@ def load_model_and_tokenizer(config: Config, device_map: str = "auto"):
     return model, tokenizer
 
 
-def prepare_dataset(tokenizer, dataset_name: str = "wikitext", dataset_config: str = "wikitext-2-raw-v1"):
+def prepare_dataset(
+    tokenizer,
+    dataset_path: str = "wikitext",
+    dataset_name: str = "wikitext-2-raw-v1",
+    split: str = "train[:1%]",
+):
     """Prepare dataset for training."""
-    print(f"Loading dataset: {dataset_name}/{dataset_config}")
+    print(f"Loading dataset: {dataset_path}/{dataset_name} split={split}")
     
-    dataset = load_dataset(dataset_name, dataset_config, split="train[:1%]")  # Use 1% for demo
+    dataset = load_dataset(dataset_path, dataset_name, split=split)  # Use 1% for demo
     
     def tokenize_function(examples):
         return tokenizer(
@@ -90,19 +92,24 @@ def main():
     model, tokenizer = load_model_and_tokenizer(args.config)
     
     # Prepare dataset
-    dataset = prepare_dataset(tokenizer)
+    train_dataset = prepare_dataset(tokenizer)
+    eval_dataset = prepare_dataset(tokenizer, split="test[:1%]")
+
     
     # Setup training arguments
     training_args = TrainingArguments(
+        do_eval=True,
         output_dir=args.config.output_dir,
         num_train_epochs=args.config.num_epochs,
         per_device_train_batch_size=args.config.batch_size,
         learning_rate=args.config.learning_rate,
         logging_steps=1,
+        eval_strategy="steps",
+        eval_steps=10,
         save_steps=500,
         save_total_limit=2,
         push_to_hub=False,
-        report_to="none",
+        # report_to="none",
         # fp16=True,
         # evaluation_strategy="no",
         # gradient_accumulation_steps=4,
@@ -119,7 +126,8 @@ def main():
     trainer = Trainer(
         model=model,
         args=training_args,
-        train_dataset=dataset,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
         data_collator=data_collator,
     )
     

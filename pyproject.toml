@@ -9,13 +9,15 @@ dependencies = [
     "numpy>=2.3.1",
     "simple-parsing>=0.1.7",
     "torch==2.7.1",
-    # "torchvision>=0.20.0",
+    "peft>=0.10.0",
     "rocm[devel,libraries]",
     "tqdm>=4.67.1",
     "wandb>=0.18.0",
     "transformers>=4.45.0",
     "ipykernel>=7.0.1",
     "ipdb>=0.13.13",
+    "pandas>=2.3.3",
+    "ruff>=0.14.5",
 ]
 
 [tool.uv]
