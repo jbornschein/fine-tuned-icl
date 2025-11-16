@@ -31,7 +31,7 @@ class Config:
     num_epochs: int = 3
     learning_rate: float = 3e-5
     max_sample_tokens: int = 8
-    test_pos: str = ""
+    test_pos: str = "3,10,30,100,-1"
 
 
 if __name__ == "__main__":
@@ -79,8 +79,7 @@ if __name__ == "__main__":
     if args.config.num_train_examples is not None:
         train_df = train_df[: config.num_train_examples]
 
-    test_pos = [int(p) for p in config.test_pos.split(",")]
-    # test_pos = [p if p >= 0 else len(train_df) - p for p in test_pos]
+    test_pos = [int(p) for p in config.test_pos.split(",") if p != ""]
 
     cum_correct = 0
     avg_accuracy = 0.0
@@ -118,7 +117,7 @@ if __name__ == "__main__":
             "completion": result.completion,
         }
 
-        # Do we perform a full test-set evaluation?
+        # Do we perform a test-set evaluation?
         if pos in test_pos:
             test_result = eval_dataframe(
                 instruction=config.instruction,
@@ -169,7 +168,7 @@ if __name__ == "__main__":
         wandb.log(diags)
         pbar.set_postfix({"# correct": cum_correct, "avg-acc": f"{avg_accuracy:.2}"})
 
-    # Do we perform a full test-set evaluation?
+    # Do we perform a final test-set evaluation?
     if -1 in test_pos:
         test_result = eval_dataframe(
             instruction=config.instruction,
