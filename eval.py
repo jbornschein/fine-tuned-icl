@@ -124,7 +124,7 @@ def eval_dataframe(
 
     logger.info(
         "Evaluation complete",
-        accuracy=accuracy,
+        accuracy=float(accuracy),
         num_correct=int(df_results["correct"].sum()),
         num_total=len(df_results),
     )
