@@ -81,8 +81,9 @@ def eval_example(
 
 def eval_dataframe(
     instruction: str,
-    context: pd.DataFrame,
     test_examples: pd.DataFrame,
+    context: pd.DataFrame,
+    num_context_examples: int | None,
     *,
     model: AutoModelForCausalLM,
     tokenizer: AutoTokenizer,
@@ -92,15 +93,20 @@ def eval_dataframe(
     logger.info(
         "Starting evaluation",
         num_examples=len(test_examples),
-        num_context_examples=len(context),
+        num_context_examples=num_context_examples,
         max_new_tokens=max_new_tokens,
         temperature=temperature,
     )
 
+    def sample_context():
+        if num_context_examples is None:
+            return context
+        return context.sample(n=num_context_examples)
+
     results = [
         eval_example(
             instruction=instruction,
-            context=context,
+            context=sample_context(),
             tokenizer=tokenizer,
             model=model,
             max_new_tokens=max_new_tokens,
