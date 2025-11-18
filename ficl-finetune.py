@@ -32,6 +32,7 @@ class Config:
     learning_rate: float = 3e-5
     max_sample_tokens: int = 8
     test_pos: str = "3,10,30,100,-1"
+    optimizer: str = "adamw"
 
 
 if __name__ == "__main__":
@@ -70,8 +71,12 @@ if __name__ == "__main__":
     )
 
     # Create optimizer
-    optimizer = torch.optim.AdamW(model.parameters(), lr=config.learning_rate)
-    # optimizer = torch.optim.Adafactor(model.parameters(), lr=config.learning_rate)
+    if config.optimizer == "adamw":
+        optimizer = torch.optim.AdamW(model.parameters(), lr=config.learning_rate)
+    elif config.optimizer == "adafactor":
+        optimizer = torch.optim.Adafactor(model.parameters(), lr=config.learning_rate)
+    else:
+        raise ValueError(f"Unknown optimizer: {config.optimizer}")
 
     # Load data
     train_df, test_df = load_bbh(args.config.dataset, config.num_test_examples)
