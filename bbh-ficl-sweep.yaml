@@ -1,0 +1,38 @@
+# WeightAndBiases sweep configuration template
+#
+# To run the sweep:
+#   $ uv run wandb sweep --project ficl bbh-sweep.yaml
+#   $ uv run wandb agent <sweep-id> <num-agents>
+
+program: ficl-finetune.py
+name: Navigate / Qwen3 4B
+method: grid
+metric:
+  goal: maximize
+  name: avg_accuracy
+parameters:
+  dataset:
+    values:
+    - navigate
+  instruction:
+    values:
+    - Reply directly with the answer. No thinking!
+  learning_rate:
+    values:
+    - 1e-05
+    - 2e-05
+    - 3e-05
+  model_name:
+    values:
+    - Qwen/Qwen3-4B
+  num_context:
+    values:
+    - 0
+    - 3
+  num_epochs:
+    values:
+    - 1
+    - 3
+    - 5
+    - 10
+    - 15

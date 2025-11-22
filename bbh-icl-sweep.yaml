@@ -1,0 +1,30 @@
+# WeightAndBiases sweep configuration template.
+#
+# To run the sweep:
+#   $ uv run wandb sweep --project ficl bbh-sweep.yaml
+#   $ uv run wandb agent <sweep-id> <num-agents>
+
+program: icl-only.py
+name: ICL-Only
+method: grid
+metric:
+  goal: maximize
+  name: avg_accuracy
+parameters:
+  dataset:
+    values:
+    - navigate
+    - geometric_shapes
+    - snarks
+    - temporal_sequences
+    - object_counting
+  instruction:
+    values:
+    - Reply directly with the answer. No thinking!
+  model_name:
+    values:
+    - qwen3-0.6b
+    - qwen3-1.7b
+    - qwen3-4b
+  random_seed:
+    values: [1, 2, 3, 4, 5]
