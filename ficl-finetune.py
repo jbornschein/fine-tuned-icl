@@ -84,6 +84,9 @@ if __name__ == "__main__":
     # Load data
     train_df, test_df = load_bbh(config.dataset, config.num_test_examples)
 
+    # Shuffle train_df based on random seed
+    train_df = train_df.sample(frac=1, random_state=config.random_seed)
+
     if config.num_train_examples is not None:
         train_df = train_df[: config.num_train_examples]
 
