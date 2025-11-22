@@ -12,7 +12,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 import wandb
 from data import format_prompt, load_bbh
-from eval import eval_dataframe, eval_example
+from eval import LocalGenerator, eval_dataframe, eval_example
 
 logger = structlog.get_logger()
 
@@ -70,6 +70,9 @@ if __name__ == "__main__":
         config.model_name, dtype=torch.bfloat16, device_map="auto"
     )
 
+    # Create generator for evaluation
+    generator = LocalGenerator(model, tokenizer)
+
     # Create optimizer
     if config.optimizer == "adamw":
         optimizer = torch.optim.AdamW(model.parameters(), lr=config.learning_rate)
@@ -104,8 +107,7 @@ if __name__ == "__main__":
             context=context,
             test_input=input,
             test_target=target,
-            model=model,
-            tokenizer=tokenizer,
+            generator=generator,
             max_new_tokens=config.max_sample_tokens,
         )
 
@@ -129,8 +131,7 @@ if __name__ == "__main__":
                 context=train_df[:pos],
                 num_context_examples=num_context,
                 test_examples=test_df,
-                model=model,
-                tokenizer=tokenizer,
+                generator=generator,
                 max_new_tokens=config.max_sample_tokens,
             )
             test_accuracy = float(test_result["correct"].mean())
@@ -180,8 +181,7 @@ if __name__ == "__main__":
             context=train_df,
             num_context_examples=num_context,
             test_examples=test_df,
-            model=model,
-            tokenizer=tokenizer,
+            generator=generator,
             max_new_tokens=config.max_sample_tokens,
         )
         test_accuracy = float(test_result["correct"].mean())

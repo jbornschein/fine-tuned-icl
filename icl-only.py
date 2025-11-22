@@ -2,20 +2,23 @@ import dataclasses
 import logging
 
 import structlog
-import torch
+from openai import OpenAI
 from simple_parsing import ArgumentParser
-from transformers import AutoModelForCausalLM, AutoTokenizer
 
 import wandb
 from data import load_bbh
-from eval import eval_dataframe
+from eval import APIGenerator, eval_dataframe
 
 
 @dataclasses.dataclass
 class Config:
     """Configuration for the Qwen model and training."""
 
-    model_name: str = "Qwen/Qwen3-1.7B"
+    api_url: str = "http://strx:8080/v1"
+    api_key: str | None = None
+    model: str = "qwen3-1.7b"
+    # For tokenizer only (not needed for API, but kept for prompt formatting compatibility)
+    # tokenizer_name: str | None = None
     dataset: str = "geometric_shapes"
     num_test_examples: int = 100
 
@@ -45,13 +48,13 @@ if __name__ == "__main__":
     }
     config = Config(**config_dict)
 
-    # Load model and tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(args.config.model_name)
-    model = AutoModelForCausalLM.from_pretrained(
-        args.config.model_name,
-        trust_remote_code=True,
-        dtype=torch.bfloat16,
+    openai_client = OpenAI(
+        base_url=config.api_url,
+        api_key=config.api_key or "not-needed",
     )
+
+    # Initialize API generator
+    generator = APIGenerator(openai_client, model=config.model)
 
     # Load data
     train_df, test_df = load_bbh(args.config.dataset, args.config.num_test_examples)
@@ -64,8 +67,7 @@ if __name__ == "__main__":
             test_examples=test_df,
             context=train_df[:pos],
             num_context_examples=num_context_examples,
-            model=model,
-            tokenizer=tokenizer,
+            generator=generator,
             max_new_tokens=8,
         )
         accuracy = result["correct"].mean()
