@@ -82,9 +82,9 @@ if __name__ == "__main__":
         raise ValueError(f"Unknown optimizer: {config.optimizer}")
 
     # Load data
-    train_df, test_df = load_bbh(args.config.dataset, config.num_test_examples)
+    train_df, test_df = load_bbh(config.dataset, config.num_test_examples)
 
-    if args.config.num_train_examples is not None:
+    if config.num_train_examples is not None:
         train_df = train_df[: config.num_train_examples]
 
     test_pos = [int(p) for p in config.test_pos.split(",") if p != ""]
@@ -133,6 +133,7 @@ if __name__ == "__main__":
                 test_examples=test_df,
                 generator=generator,
                 max_new_tokens=config.max_sample_tokens,
+                random_state=config.random_seed,
             )
             test_accuracy = float(test_result["correct"].mean())
             diags |= {
@@ -183,6 +184,7 @@ if __name__ == "__main__":
             test_examples=test_df,
             generator=generator,
             max_new_tokens=config.max_sample_tokens,
+            random_state=config.random_seed,
         )
         test_accuracy = float(test_result["correct"].mean())
         diags = {

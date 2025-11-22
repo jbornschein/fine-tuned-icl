@@ -16,15 +16,20 @@ class Config:
 
     api_url: str = "http://strx:8080/v1"
     api_key: str | None = None
-    model: str = "qwen3-1.7b"
+    model_name: str = "qwen3-1.7b"
     # For tokenizer only (not needed for API, but kept for prompt formatting compatibility)
     # tokenizer_name: str | None = None
     dataset: str = "geometric_shapes"
+    instruction: str = ""
+    random_seed: int = 42
+    num_train_examples: int | None = None
     num_test_examples: int = 100
+    test_pos: str = "3,10,30,100"
+    max_sample_tokens: int = 8
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description="Finetune Qwen model")
+    parser = ArgumentParser(description="ICL Evaluation")
     parser.add_arguments(Config, dest="config")
     parser.add_argument(
         "-v",
@@ -54,21 +59,31 @@ if __name__ == "__main__":
     )
 
     # Initialize API generator
-    generator = APIGenerator(openai_client, model=config.model)
+    generator = APIGenerator(openai_client, model=config.model_name)
 
     # Load data
-    train_df, test_df = load_bbh(args.config.dataset, args.config.num_test_examples)
+    train_df, test_df = load_bbh(config.dataset, config.num_test_examples)
 
-    # for trial in range(3):
-    for pos in [3, 5, 10, 30]:
-        num_context_examples = pos
+    # Shuffle train_df based on random seed
+    train_df = train_df.sample(frac=1, random_state=config.random_seed)
+
+    if config.num_train_examples is not None:
+        train_df = train_df[: config.num_train_examples]
+
+    test_pos = [int(p) for p in config.test_pos.split(",") if p != ""]
+
+    for pos in test_pos:
+        if pos == -1:
+            pos = len(train_df)
+
+        # For ICL-only, use ALL examples from train_df[:pos] (no subsampling)
         result = eval_dataframe(
-            instruction="",
+            instruction=config.instruction,
             test_examples=test_df,
             context=train_df[:pos],
-            num_context_examples=num_context_examples,
+            num_context_examples=None,
             generator=generator,
-            max_new_tokens=8,
+            max_new_tokens=config.max_sample_tokens,
         )
         accuracy = result["correct"].mean()
 
@@ -76,7 +91,7 @@ if __name__ == "__main__":
             {
                 "pos": pos,
                 "accuracy": accuracy,
-                "num_context": num_context_examples,
+                "num_context": len(train_df[:pos]),  # All examples used
                 "table": wandb.Table(dataframe=result),
             }
         )

@@ -222,6 +222,7 @@ def eval_dataframe(
     generator: BaseGenerator,
     max_new_tokens: int = 512,
     temperature: float = 0.2,
+    random_state: int | None = None,
 ) -> pd.DataFrame:
     """Evaluate a dataframe of test examples.
 
@@ -233,6 +234,7 @@ def eval_dataframe(
         generator: Generator instance (LocalGenerator or APIGenerator)
         max_new_tokens: Maximum number of tokens to generate
         temperature: Sampling temperature
+        random_state: Random state for deterministic sampling (None = non-deterministic)
 
     Returns:
         DataFrame with evaluation results
@@ -248,7 +250,7 @@ def eval_dataframe(
     def sample_context():
         if num_context_examples is None:
             return context
-        return context.sample(n=num_context_examples)
+        return context.sample(n=num_context_examples, random_state=random_state)
 
     results = [
         eval_example(
