@@ -2,5 +2,6 @@ __pycache__/
 .git
 wandb
 output/*
+results/*
 .venv/
 .DS_Store

@@ -5,7 +5,8 @@
 #   $ uv run wandb agent <sweep-id> <num-agents>
 
 program: ficl-finetune.py
-name: Navigate / Qwen3 4B
+name: NEW Sports Understanding / Qwen3 4B
+
 method: grid
 metric:
   goal: maximize
@@ -14,17 +15,26 @@ parameters:
   dataset:
     values:
     - navigate
+    - geometric_shapes
+    - snarks
+    - temporal_sequences
+    - object_counting
+    # - sports_understanding
+  random_seed:
+    values: [1, 2, 3, 4, 5]
   instruction:
     values:
     - Reply directly with the answer. No thinking!
   learning_rate:
     values:
+    - 3e-06
     - 1e-05
-    - 2e-05
     - 3e-05
   model_name:
     values:
     - Qwen/Qwen3-4B
+    # - Qwen/Qwen3-0.6B
+    # - Qwen/Qwen3-1.7B
   num_context:
     values:
     - 0
@@ -35,4 +45,3 @@ parameters:
     - 3
     - 5
     - 10
-    - 15

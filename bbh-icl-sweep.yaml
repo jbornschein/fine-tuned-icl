@@ -5,7 +5,7 @@
 #   $ uv run wandb agent <sweep-id> <num-agents>
 
 program: icl-only.py
-name: ICL-Only
+name: Sports Understanding / ICL-Only
 method: grid
 metric:
   goal: maximize
@@ -13,11 +13,12 @@ metric:
 parameters:
   dataset:
     values:
-    - navigate
-    - geometric_shapes
-    - snarks
-    - temporal_sequences
-    - object_counting
+    # - sports_understanding
+    # - navigate
+    # - geometric_shapes
+    # - snarks
+    # - temporal_sequences
+    # - object_counting
   instruction:
     values:
     - Reply directly with the answer. No thinking!
@@ -26,5 +27,6 @@ parameters:
     - qwen3-0.6b
     - qwen3-1.7b
     - qwen3-4b
+    - qwen3-30b
   random_seed:
     values: [1, 2, 3, 4, 5]
