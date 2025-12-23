@@ -91,6 +91,7 @@ if __name__ == "__main__":
         train_df = train_df[: config.num_train_examples]
 
     test_pos = [int(p) for p in config.test_pos.split(",") if p != ""]
+    test_pos = [len(train_df) - p if p < 0 else p for p in test_pos]
 
     cum_correct = 0
     avg_accuracy = 0.0
