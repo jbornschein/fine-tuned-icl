@@ -71,11 +71,10 @@ if __name__ == "__main__":
         train_df = train_df[: config.num_train_examples]
 
     test_pos = [int(p) for p in config.test_pos.split(",") if p != ""]
+    test_pos = [len(train_df) if p == -1 else p for p in test_pos]
+    test_pos = [p for p in test_pos if p <= len(train_df)]
 
     for pos in test_pos:
-        if pos == -1:
-            pos = len(train_df)
-
         # For ICL-only, use ALL examples from train_df[:pos] (no subsampling)
         result = eval_dataframe(
             instruction=config.instruction,
@@ -90,8 +89,8 @@ if __name__ == "__main__":
         wandb.log(
             {
                 "pos": pos,
-                "accuracy": accuracy,
-                "num_context": len(train_df[:pos]),  # All examples used
+                "num_context": pos,
+                "test_accuracy": accuracy,
                 "table": wandb.Table(dataframe=result),
             }
         )
